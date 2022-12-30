@@ -1,6 +1,9 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
+use Laravel\Socialite\Facades\Socialite;
+use App\Http\Controllers\Auth\LoginController;
 
 /*
 |--------------------------------------------------------------------------
@@ -13,6 +16,17 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', [UserController::class, 'index'])->middleware('auth');
+
+
+Route::get('/login-google', function () {
+    return Socialite::driver('google')->redirect();
+})->name('login.google');
+
+Route::get('/google-callback', [UserController::class, 'loginGoogle']);
+
+Auth::routes();
+
+Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('logout', [LoginController::class, 'logout']);
