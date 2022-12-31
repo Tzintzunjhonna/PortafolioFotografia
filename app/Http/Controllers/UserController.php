@@ -10,23 +10,41 @@ use Laravel\Socialite\Facades\Socialite;
 
 class UserController extends Controller
 {
+    
     public function index(Request $request)
     {
         $user = Auth::user();
-        //dd($user->name);
         $data['user'] = $user;
-        return view('welcome', $data);
+        //* Dependiendo los roles del login redireccionara a la vista
+
+        if($user->role == 1){
+
+            return view('admin.dashboard.index', $data);
+
+        }else if($user->role == 2){
+
+            return view('admin.dashboard.index', $data);
+
+        }else{
+
+            return view('admin.dashboard.index', $data);
+
+        }
+        
     }
 
     public function loginGoogle (Request $request)
     {
         $user_google = Socialite::driver('google')->user();
 
-        $user_exist = User::where('external_id', $user_google->id)->where('external_auth', 'google')->first();
+        $user_exist = User::where('external_id', $user_google->id)
+            ->where('external_auth', 'google')
+            ->orWhere('email', $user_google->email)
+            ->first();
 
         if(isset($user_exist)){
             Auth::login(($user_exist));
-            return redirect('/');
+            return redirect('/home');
         }else{
             $user_new = User::create([
                 'name'=> $user_google->name,
@@ -36,7 +54,7 @@ class UserController extends Controller
                 'external_auth'=> 'google'
             ]);
             Auth::login(($user_new));
-            return redirect('/');
+            return redirect('/home');
         }
         
         
